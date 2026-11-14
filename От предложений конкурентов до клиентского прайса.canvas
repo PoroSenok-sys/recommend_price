@@ -1,0 +1,35 @@
+{
+	"nodes":[
+		{"id":"flow-group","type":"group","x":-40,"y":-100,"width":1300,"height":2810,"label":"От предложений конкурентов до клиентского прайса"},
+		{"id":"schedule","type":"text","text":"## 1. Планировщик\nРаз в час запускает новый цикл сбора.\nКаждый цикл получает уникальный ID.","x":0,"y":0,"width":560,"height":140,"color":"5"},
+		{"id":"fetch","type":"text","text":"## 2. Получение предложений\nОтдельный адаптер для каждой площадки.\nТайм-аут запроса; при временном сбое — до двух повторов с увеличением задержки.","x":0,"y":220,"width":560,"height":170,"color":"5"},
+		{"id":"received","type":"text","text":"## Данные площадки получены?\nУспешные результаты обрабатываются независимо от сбоев других площадок.","x":0,"y":470,"width":560,"height":140,"color":"3"},
+		{"id":"raw","type":"text","text":"## 3. Сохранение исходных данных\nХранилище: предложения, источник, время получения, ID цикла и статус.\nSQLite подходит для одного локального процесса; выбор уточняется по нагрузке.","x":0,"y":690,"width":560,"height":190,"color":"6"},
+		{"id":"match","type":"text","text":"## 4. Сопоставление с каталогом\nБренд + нормализованный артикул → внутренний ID товара.\nПравила формируем на основании бизнес-требований; неоднозначные совпадения исключаем.","x":0,"y":960,"width":560,"height":170,"color":"5"},
+		{"id":"quality","type":"text","text":"## 5. Проверка пригодности\nСвежесть, полнота, валюта, единица продажи и другие согласованные условия.\nПредложения группируются по внутреннему ID товара.","x":0,"y":1210,"width":560,"height":170,"color":"5"},
+		{"id":"usable","type":"text","text":"## Есть пригодные предложения по товару?\nДопущение: достаточно одного свежего, однозначно сопоставленного предложения.","x":0,"y":1460,"width":560,"height":140,"color":"3"},
+		{"id":"calculate","type":"text","text":"## 6. Расчёт рекомендации\nБизнес-правила получают пригодные предложения по товару и наши ограничения.\nРезультат: рекомендуемая цена и объяснение расчёта.","x":0,"y":1680,"width":560,"height":170,"color":"5"},
+		{"id":"safe","type":"text","text":"## Рекомендация прошла контроль?\nПроверка согласованных ограничений и допустимости автоматического изменения.","x":0,"y":1930,"width":560,"height":140,"color":"3"},
+		{"id":"prepare","type":"text","text":"## 7. Подготовка обновления\nСохранить рекомендацию, причину и версию; присвоить уникальный ID обновления.\nПовторная обработка того же результата не создаёт новое обновление.","x":0,"y":2150,"width":560,"height":180,"color":"6"},
+		{"id":"hold","type":"text","text":"## Сохранить текущую цену\nЕсли пригодных предложений нет — не обновлять цену этого товара.\nНеоднозначные данные направить на разбор; остальные товары обрабатываются дальше.","x":690,"y":1460,"width":510,"height":200,"color":"1"},
+		{"id":"review","type":"text","text":"## Ручная проверка\nСпорная рекомендация ожидает решения ответственного.\nДо одобрения действует текущая цена; после одобрения обновление готовится к передаче.","x":690,"y":1930,"width":510,"height":190,"color":"2"},
+		{"id":"publish","type":"text","text":"## 8. Действующая система → клиентский прайс\nПередать проверенный Excel или использовать согласованный интерфейс.\nПриёмник пропускает уже применённые ID и фиксирует результат. До публикации сохраняется предыдущая версия прайса.","x":0,"y":2410,"width":560,"height":230,"color":"4"},
+		{"id":"failed","type":"text","text":"## Площадка недоступна\nПовторы исчерпаны: записать ошибку, уведомить ответственного, пропустить площадку в текущем цикле.\nПродолжить обработку успешных результатов остальных площадок.","x":690,"y":470,"width":510,"height":210,"color":"1"}
+	],
+	"edges":[
+		{"id":"edge-1","fromNode":"schedule","fromSide":"bottom","toNode":"fetch","toSide":"top"},
+		{"id":"edge-2","fromNode":"fetch","fromSide":"bottom","toNode":"received","toSide":"top"},
+		{"id":"edge-3","fromNode":"received","fromSide":"bottom","toNode":"raw","toSide":"top","label":"Да"},
+		{"id":"edge-4","fromNode":"received","fromSide":"right","toNode":"failed","toSide":"left","label":"Нет"},
+		{"id":"edge-5","fromNode":"raw","fromSide":"bottom","toNode":"match","toSide":"top"},
+		{"id":"edge-6","fromNode":"match","fromSide":"bottom","toNode":"quality","toSide":"top"},
+		{"id":"edge-7","fromNode":"quality","fromSide":"bottom","toNode":"usable","toSide":"top"},
+		{"id":"edge-8","fromNode":"usable","fromSide":"bottom","toNode":"calculate","toSide":"top","label":"Да"},
+		{"id":"edge-9","fromNode":"usable","fromSide":"right","toNode":"hold","toSide":"left","label":"Нет"},
+		{"id":"edge-10","fromNode":"calculate","fromSide":"bottom","toNode":"safe","toSide":"top"},
+		{"id":"edge-11","fromNode":"safe","fromSide":"bottom","toNode":"prepare","toSide":"top","label":"Да"},
+		{"id":"edge-12","fromNode":"safe","fromSide":"right","toNode":"review","toSide":"left","label":"Нет"},
+		{"id":"edge-13","fromNode":"review","fromSide":"bottom","toNode":"prepare","toSide":"right","label":"Одобрено"},
+		{"id":"edge-14","fromNode":"prepare","fromSide":"bottom","toNode":"publish","toSide":"top"}
+	]
+}
